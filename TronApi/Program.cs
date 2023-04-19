@@ -1,30 +1,35 @@
+
+
 global using TronApi.Data;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Cors;
-
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// Register the Swagger generator
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "TronApi", Version = "v1" });
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
-                      policy =>
-                      {
-                          policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                      });
+        policy =>
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        });
 });
 
 var app = builder.Build();
@@ -33,7 +38,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TronApi V1");
+    });
 }
 
 app.UseHttpsRedirection();
@@ -43,8 +51,5 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
-
-
-
 
 app.Run();
