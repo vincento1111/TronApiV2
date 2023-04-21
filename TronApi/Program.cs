@@ -1,5 +1,3 @@
-
-
 global using TronApi.Data;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Cors;
@@ -40,7 +38,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TronApi V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = string.Empty; // Serve Swagger UI at the application root
     });
 }
 
