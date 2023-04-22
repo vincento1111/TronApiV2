@@ -67,6 +67,13 @@ namespace TronApi.Controllers
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUserAccount(User userAccount)
         {
+            // Check if a user with the same email already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userAccount.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("A user with this email already exists.");
+            }
+
             _context.Users.Add(userAccount);
             await _context.SaveChangesAsync();
 
