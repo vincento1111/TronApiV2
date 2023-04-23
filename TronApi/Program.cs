@@ -52,6 +52,13 @@ app.UseCors();
 
 app.UseAuthorization();
 
+// Add static files and default files middleware
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
+
+// Add the fallback route
+app.MapFallbackToFile("index.html");
 
 app.Run();
