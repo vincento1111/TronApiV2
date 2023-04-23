@@ -59,10 +59,6 @@ app.UseStaticFiles();
 app.MapControllers();
 
 // Add the fallback route
-app.MapFallback(context =>
-{
-    context.Response.Redirect("/");
-    return Task.CompletedTask;
-});
+app.MapFallbackToFile("index.html");
 
 app.Run();
