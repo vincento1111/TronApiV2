@@ -46,27 +46,39 @@ namespace TronApi.Controllers
             if (dbStats == null)
                 return NotFound("User stats not found");
 
-            switch (statName.ToLower())
+            // Check if there is at least 1 energy left
+            if (dbStats.Energy > 0)
             {
-                case "strength":
-                    dbStats.Strength++;
-                    break;
-                case "defense":
-                    dbStats.Defense++;
-                    break;
-                case "speed":
-                    dbStats.Speed++;
-                    break;
-                case "dexterity":
-                    dbStats.Dexterity++;
-                    break;
-                default:
-                    return BadRequest("Invalid stat name");
-            }
+                switch (statName.ToLower())
+                {
+                    case "strength":
+                        dbStats.Strength++;
+                        break;
+                    case "defense":
+                        dbStats.Defense++;
+                        break;
+                    case "speed":
+                        dbStats.Speed++;
+                        break;
+                    case "dexterity":
+                        dbStats.Dexterity++;
+                        break;
+                    default:
+                        return BadRequest("Invalid stat name");
+                }
 
-            await _context.SaveChangesAsync();
-            return Ok(dbStats);
+                // Decrease energy by 1
+                dbStats.Energy--;
+
+                await _context.SaveChangesAsync();
+                return Ok(dbStats);
+            }
+            else
+            {
+                return BadRequest("Not enough energy");
+            }
         }
+
         //[HttpPut]
 
         //public async Task<ActionResult<List<UserStats>>> UpdateStats(UserStats Request)
