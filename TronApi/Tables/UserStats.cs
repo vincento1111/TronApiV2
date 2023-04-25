@@ -4,8 +4,6 @@ namespace TronApi
 {
     public class UserStats
     {
-
-
         [Key]
         public int StatId { get; set; }
         public int UserId { get; set; }
@@ -15,8 +13,9 @@ namespace TronApi
         public int Dexterity { get; set; }
         public int Level { get; set; }
         public int Experience { get; set; }
-        public int Life { get; set; } 
+        public int Life { get; set; }
         public int Money { get; set; }
+        public int Energy { get; set; }
 
         public UserStats(int userId)
         {
@@ -29,7 +28,7 @@ namespace TronApi
             Experience = 0;
             Life = 100;
             Money = 100;
+            Energy = 6;
         }
-
     }
 }
