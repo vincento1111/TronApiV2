@@ -39,39 +39,34 @@ namespace TronApi.Controllers
             return Ok(await _context.UsersStats.ToListAsync());
         }
 
-        [HttpPut("{userId}/{statType}")]
-        public async Task<ActionResult<UserStats>> UpdateStats(int userId, int statType)
+        [HttpPut("IncrementStat")]
+        public async Task<ActionResult<UserStats>> IncrementStat(int userId, string statName)
         {
-            var dbStats = await _context.UsersStats.FirstOrDefaultAsync(u => u.UserId == userId);
+            var dbStats = await _context.UsersStats.FirstOrDefaultAsync(x => x.UserId == userId);
             if (dbStats == null)
-                return NotFound("stats not found");
+                return NotFound("User stats not found");
 
-            switch (statType)
+            switch (statName.ToLower())
             {
-                case 1:
+                case "strength":
                     dbStats.Strength++;
                     break;
-                case 2:
-                    dbStats.Speed++;
-                    break;
-                case 3:
+                case "defense":
                     dbStats.Defense++;
                     break;
-                case 4:
+                case "speed":
+                    dbStats.Speed++;
+                    break;
+                case "dexterity":
                     dbStats.Dexterity++;
                     break;
                 default:
-                    return BadRequest("Invalid stat type");
+                    return BadRequest("Invalid stat name");
             }
 
             await _context.SaveChangesAsync();
-
             return Ok(dbStats);
         }
-
-
-
-
         //[HttpPut]
 
         //public async Task<ActionResult<List<UserStats>>> UpdateStats(UserStats Request)
