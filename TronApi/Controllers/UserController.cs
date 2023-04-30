@@ -15,7 +15,7 @@ namespace TronApi.Controllers
         {
             _context = context;
         }
-        [EnableCors]
+        
         [HttpGet]
         public async Task<ActionResult<List<User>>> Get()
         {

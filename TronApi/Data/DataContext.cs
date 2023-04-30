@@ -10,6 +10,7 @@ namespace TronApi.Data
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<MasterItemsTable> MasterItemsTables { get; set; }
         public DbSet<UserInventory> UserInventories { get; set; }
+        public DbSet<UserChats> UserChats { get; set; }
 
     }
 }
