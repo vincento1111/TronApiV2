@@ -109,10 +109,16 @@ namespace TronApi.Controllers
         public async Task<ActionResult<List<User>>> Delete(int id)
         {
             var dbUser = await _context.Users.FindAsync(id);
+            var dbProfile = await _context.Profiles.FindAsync(id);
+            var dbUserStats = await _context.UsersStats.FindAsync(id);
+            var dbInventory = await _context.UserInventories.FindAsync(id);
             if (dbUser == null)
                 return BadRequest("404 hero not found");
 
             _context.Users.Remove(dbUser);
+            _context.Profiles.Remove(dbProfile);
+            _context.UsersStats.Remove(dbUserStats);
+            _context.UserInventories.Remove(dbInventory);
             await _context.SaveChangesAsync();
             return Ok(await _context.Users.ToListAsync());
         }
