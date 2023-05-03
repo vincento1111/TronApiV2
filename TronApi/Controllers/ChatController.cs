@@ -22,13 +22,13 @@ namespace TronApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserChats>>> GetAllMessages()
         {
-            return await _context.UserChats.ToListAsync();
+            return await _context.UserChats.Include(uc => uc.User).ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserChats>> GetMessage(int id)
         {
-            var userChats = await _context.UserChats.FindAsync(id);
+            var userChats = await _context.UserChats.Include(uc => uc.User).FirstOrDefaultAsync(uc => uc.MessageId == id);
 
             if (userChats == null)
             {
@@ -37,6 +37,7 @@ namespace TronApi.Controllers
 
             return userChats;
         }
+
 
 
 
