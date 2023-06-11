@@ -2,6 +2,7 @@ global using TronApi.Data;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Cors;
 using Microsoft.OpenApi.Models;
+using TronApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddSignalR();
+
 
 // Register the Swagger generator
 builder.Services.AddSwaggerGen(c =>
@@ -59,6 +62,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 // Add the fallback route
 app.MapFallbackToFile("index.html");
