@@ -26,10 +26,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(
+    options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            policy.WithOrigins("http://localhost:4200") // Replace with your client's origin
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
 });
 
@@ -51,7 +54,7 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.UseCors();
+app.UseCors("AllowSpecificOrigin");
 
 app.UseRouting();
 
