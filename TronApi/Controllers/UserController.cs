@@ -52,17 +52,18 @@ namespace TronApi.Controllers
             //else return Ok(temp);
         }
 
-        [HttpGet("id")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUserId(string email)
+
+        [HttpGet("{id}/userStats")] 
+        public async Task<ActionResult<UserStats>> GetStats(int id)
         {
-            var _user = await _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
-            if (_user == null)
+            var userStats = await _context.UsersStats.FirstOrDefaultAsync(s => s.UserId == id);
+            if (userStats == null)
             {
-                return BadRequest();
+                return BadRequest("null ");
             }
-            
-            else return Ok(_user.UserId);
+            else return Ok(userStats);
         }
+
 
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUserAccount(User userAccount)
