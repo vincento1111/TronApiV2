@@ -40,9 +40,9 @@ namespace TronApi.Controllers
         }
 
         [HttpPut("IncrementStat")]
-        public async Task<ActionResult<UserStats>> IncrementStat(int userId, string statName)
+        public async Task<ActionResult<UserStats>> IncrementStat(int statId, string statName)
         {
-            var dbStats = await _context.UsersStats.FirstOrDefaultAsync(x => x.UserId == userId);
+            var dbStats = await _context.UsersStats.FirstOrDefaultAsync(x => x.StatId == statId);
             if (dbStats == null)
                 return NotFound("User stats not found");
 
