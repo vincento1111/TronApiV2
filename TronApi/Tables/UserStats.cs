@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TronApi
 {
@@ -6,6 +7,7 @@ namespace TronApi
     {
         [Key]
         public int StatId { get; set; }
+        [ForeignKey("User")]
         public int UserId { get; set; }
         public int Strength { get; set; }
         public int Defense { get; set; }
