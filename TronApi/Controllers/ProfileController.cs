@@ -21,9 +21,9 @@ namespace TronApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<List<Profile>>> Get(int userId)
+        public async Task<ActionResult<List<Profile>>> Get(int ProfileId)
         {
-            var profile = await _context.Profiles.FirstOrDefaultAsync(x => x.UserId == userId);
+            var profile = await _context.Profiles.FirstOrDefaultAsync(x => x.ProfileId == ProfileId);
             if (profile == null)
                 return BadRequest("404 profile not found");
             return Ok(profile);
