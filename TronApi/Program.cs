@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("https://troncity.azurewebsites.net/" ) // Replace with your client's origin
+            policy.WithOrigins("0.0.0.0/0.") // Replace with your client's origin
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
