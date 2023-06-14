@@ -9,7 +9,7 @@ namespace TronApi
         public int StatId { get; set; }
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
         public int Strength { get; set; }
         public int Defense { get; set; }
         public int Speed { get; set; }
