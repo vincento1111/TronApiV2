@@ -37,6 +37,7 @@ namespace TronApi.Controllers
             {
                 return BadRequest("null ");
             }
+
             else return Ok(profile);
         }
 
@@ -53,6 +54,13 @@ namespace TronApi.Controllers
 
         public async Task<ActionResult<List<Profile>>> UpdateProfile(Profile Request)
         {
+            var user = await _context.Users.FindAsync(Request.UserId);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+            Request.User = user;
+
             var dbProfile = await _context.Profiles.FindAsync(Request.ProfileId);
             if (dbProfile == null)
                 return NotFound("Hero not found");

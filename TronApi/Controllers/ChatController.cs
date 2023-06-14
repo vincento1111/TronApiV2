@@ -44,7 +44,7 @@ namespace TronApi.Controllers
         [HttpPost]
         public async Task<ActionResult<UserChats>> PostMessage(UserChats userChats)
         {
-            Console.WriteLine("hey vincent, er du en spasser?");
+            
 
             var user = await _context.Users.FindAsync(userChats.UserId);
             if (user == null)

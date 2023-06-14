@@ -9,7 +9,7 @@ namespace TronApi
         public int ProfileId { get; set; }
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public virtual User User { get; set; }
+        public User User { get; set; }
 
         public string ProfileDes { get; set; } = string.Empty;
         public Profile(int userId)
