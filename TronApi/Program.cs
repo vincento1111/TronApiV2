@@ -14,6 +14,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 builder.Services.AddSignalR();
 
+builder.Services.AddControllers(o => o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
 // Register the Swagger generator
 builder.Services.AddSwaggerGen(c =>
