@@ -29,6 +29,17 @@ namespace TronApi.Controllers
             return Ok(profile);
         }
 
+        [HttpGet("{id}/userProfile")]
+        public async Task<ActionResult<UserStats>> GetProfile(int id)
+        {
+            var profile = await _context.Profiles.FirstOrDefaultAsync(s => s.UserId == id);
+            if (profile == null)
+            {
+                return BadRequest("null ");
+            }
+            else return Ok(profile);
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<Profile>>> AddProfile(Profile profile)
         {
