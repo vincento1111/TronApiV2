@@ -60,7 +60,7 @@ namespace TronApi.Controllers
                 return BadRequest("User not found");
             }
             Request.User = user;
-
+            
             var dbProfile = await _context.Profiles.FindAsync(Request.ProfileId);
             if (dbProfile == null)
                 return NotFound("Hero not found");

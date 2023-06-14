@@ -49,22 +49,29 @@ namespace TronApi.Controllers
             {
                 return BadRequest("Item not found in MasterItemsTable");
             }
-
             // Find the user's stats
             var userStats = await _context.UsersStats.FirstOrDefaultAsync(u => u.UserId == item.UserId);
             if (userStats == null)
             {
                 return BadRequest("User stats not found");
             }
-
             // Check if the user has enough money
             if (userStats.Money < masterItem.Value)
             {
                 return BadRequest("Not enough money");
             }
-
             // Subtract the value of the item from the user's money
             userStats.Money -= masterItem.Value;
+
+            // Fetch the User and Item related to the UserInventory
+            var user = await _context.Users.FindAsync(item.UserId);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            item.User = user;
+            item.Item = masterItem;
 
             // Add the item to the user's inventory
             _context.UserInventories.Add(item);
@@ -72,13 +79,9 @@ namespace TronApi.Controllers
             // Save the changes to the database
             await _context.SaveChangesAsync();
 
-            // Return the updated list of UserInventories
-            return Ok(await _context.UserInventories.ToListAsync());
+            // Return the updated list of UserInventories with User and Item included
+            return Ok(await _context.UserInventories.Include(i => i.User).Include(i => i.Item).ToListAsync());
         }
-
-
-
-
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<UserInventory>>> Delete(int id)
