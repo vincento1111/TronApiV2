@@ -25,6 +25,10 @@ public static class GameRules
     public static int RollPower(ItemDefinition definition) =>
         definition.BasePower + RandomNumberGenerator.GetInt32(0, Math.Max(2, definition.BasePower / 2 + 1));
 
+    public static int RollTrainingBonus(ItemDefinition definition) => definition.BaseTrainingBonusPpm == 0 ? 0 :
+        RandomNumberGenerator.GetInt32(definition.BaseTrainingBonusPpm - definition.TrainingBonusRollRangePpm,
+            definition.BaseTrainingBonusPpm + definition.TrainingBonusRollRangePpm + 1);
+
     public static void AddMoney(Player player, long amount)
     {
         var result = player.Money + amount;

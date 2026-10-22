@@ -6,7 +6,7 @@ using TronApi.Infrastructure;
 
 namespace TronApi.Services;
 
-public sealed class AccountService(GameDb db, WriteCoordinator writes, IPasswordHasher<Player> passwords, TimeProvider clock)
+public sealed class AccountService(GameDb db, WriteCoordinator writes, IPasswordHasher<Player> passwords, TimeProvider clock, PlayerStatsService stats)
 {
     public Task<MeDto> Register(RegisterRequest request, CancellationToken ct) => writes.Execute(db, async () =>
     {
@@ -23,7 +23,7 @@ public sealed class AccountService(GameDb db, WriteCoordinator writes, IPassword
         var player = new Player
         {
             Email = email, NormalizedEmail = normalizedEmail, DisplayName = name,
-            NormalizedDisplayName = normalizedName, CreatedAt = now, EnergyUpdatedAt = now
+            NormalizedDisplayName = normalizedName, CreatedAt = now, EnergyUpdatedAt = now, EnergyBoostDay = now.Date
         };
         player.PasswordHash = passwords.HashPassword(player, password);
         db.Players.Add(player);
@@ -40,14 +40,16 @@ public sealed class AccountService(GameDb db, WriteCoordinator writes, IPassword
         if (player is null || passwords.VerifyHashedPassword(player, player.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
             throw new ApiException(401, "Email or password is incorrect.");
         GameRules.Regenerate(player, clock.GetUtcNow().UtcDateTime);
-        return Dto.Me(player);
+        ProgressionRules.RefreshEnergyBudget(player, clock.GetUtcNow().UtcDateTime);
+        return Dto.Me(player, await stats.TrainingBonus(player.Id, ct));
     }, ct);
 
     public Task<MeDto> Me(int id, CancellationToken ct) => writes.Execute(db, async () =>
     {
         var player = await Find(id, ct);
         GameRules.Regenerate(player, clock.GetUtcNow().UtcDateTime);
-        return Dto.Me(player);
+        ProgressionRules.RefreshEnergyBudget(player, clock.GetUtcNow().UtcDateTime);
+        return Dto.Me(player, await stats.TrainingBonus(player.Id, ct));
     }, ct);
 
     public Task<MeDto> Update(int id, ProfileRequest request, CancellationToken ct) => writes.Execute(db, async () =>
@@ -61,7 +63,8 @@ public sealed class AccountService(GameDb db, WriteCoordinator writes, IPassword
         player.NormalizedDisplayName = normalized;
         player.Description = Input.Text(request.Description, "Description", 0, 2000);
         GameRules.Regenerate(player, clock.GetUtcNow().UtcDateTime);
-        return Dto.Me(player);
+        ProgressionRules.RefreshEnergyBudget(player, clock.GetUtcNow().UtcDateTime);
+        return Dto.Me(player, await stats.TrainingBonus(player.Id, ct));
     }, ct);
 
     public async Task<IReadOnlyList<PlayerDto>> Search(string? search, CancellationToken ct)

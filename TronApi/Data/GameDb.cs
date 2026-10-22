@@ -29,21 +29,27 @@ public sealed class GameDb(DbContextOptions<GameDb> options) : DbContext(options
             p.ToTable(t =>
             {
                 t.HasCheckConstraint("CK_Player_Balances", "Money >= 0 AND Energy >= 0 AND Energy <= 72");
-                t.HasCheckConstraint("CK_Player_Stats", "Strength >= 0 AND Defense >= 0 AND Speed >= 0 AND Dexterity >= 0");
+                t.HasCheckConstraint("CK_Player_Stats", "Strength BETWEEN 1000000000 AND 100000000000 AND Defense BETWEEN 1000000000 AND 100000000000 AND Speed BETWEEN 1000000000 AND 100000000000 AND Dexterity BETWEEN 1000000000 AND 100000000000");
+                t.HasCheckConstraint("CK_Player_Progression", "Experience BETWEEN 0 AND 1629982 AND TotalTrainingEnergy >= 0 AND EnergyBoostUsed BETWEEN 0 AND 24 AND Level BETWEEN 1 AND 100 AND Health BETWEEN 0 AND 595");
             });
         });
         model.Entity<ItemDefinition>().ToTable(t =>
         {
             t.HasCheckConstraint("CK_Definition_Values", "Price >= 0 AND BasePower >= 0 AND EnergyRestore >= 0");
             t.HasCheckConstraint("CK_Definition_Tracking", "Tracking IN ('instance','stack')");
+            t.HasCheckConstraint("CK_Definition_Training", "BaseTrainingBonusPpm >= 0 AND TrainingBonusRollRangePpm >= 0 AND (EquipmentSlot IS NULL OR EquipmentSlot IN ('weapon','training'))");
         });
         model.Entity<ItemInstance>(i =>
         {
             i.HasOne(x => x.Owner).WithMany().HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.Cascade);
             i.HasOne(x => x.Definition).WithMany().HasForeignKey(x => x.DefinitionId).OnDelete(DeleteBehavior.Restrict);
-            i.HasIndex(x => x.OwnerId).IsUnique().HasFilter("Equipped = 1");
+            i.HasIndex(x => new { x.OwnerId, x.EquipmentSlot }).IsUnique().HasFilter("Equipped = 1");
             i.Property(x => x.Name).HasMaxLength(48);
-            i.ToTable(t => t.HasCheckConstraint("CK_Instance_Power", "Power >= 0"));
+            i.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Instance_Power", "Power >= 0");
+                t.HasCheckConstraint("CK_Instance_Training", "TrainingBonusPpm >= 0 AND (EquipmentSlot IS NULL OR EquipmentSlot IN ('weapon','training')) AND (Equipped = 0 OR EquipmentSlot IS NOT NULL)");
+            });
         });
         model.Entity<InventoryStack>(s =>
         {

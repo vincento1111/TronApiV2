@@ -29,6 +29,8 @@ builder.Services.AddSingleton<ConnectionRegistry>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<TrainingService>();
+builder.Services.AddScoped<PlayerStatsService>();
+builder.Services.AddSingleton<ITrainingRandom, SecureTrainingRandom>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.Configure<PasswordHasherOptions>(options => options.IterationCount = 210_000);

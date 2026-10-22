@@ -39,7 +39,9 @@ public sealed class InventoryService(GameDb db, WriteCoordinator writes, TimePro
             }
             else
                 for (var n = 0; n < quantity; n++)
-                    db.ItemInstances.Add(new() { OwnerId = ownerId, DefinitionId = definition.Id, Name = definition.Name, Power = GameRules.RollPower(definition) });
+                    db.ItemInstances.Add(new() { OwnerId = ownerId, DefinitionId = definition.Id, Name = definition.Name,
+                        Power = definition.Kind == "weapon" ? GameRules.RollPower(definition) : 0,
+                        EquipmentSlot = definition.EquipmentSlot, TrainingBonusPpm = GameRules.RollTrainingBonus(definition) });
             return true;
         }, ct);
         return await Read(ownerId, ct);
@@ -58,10 +60,15 @@ public sealed class InventoryService(GameDb db, WriteCoordinator writes, TimePro
             var player = await Player(ownerId, ct);
             var now = clock.GetUtcNow().UtcDateTime;
             GameRules.Regenerate(player, now);
+            ProgressionRules.RefreshEnergyBudget(player, now);
             if (player.Energy == GameRules.MaxEnergy) throw ApiException.BadRequest("Your energy is already full.");
-            var maximumUseful = (GameRules.MaxEnergy - player.Energy + stack.Definition.EnergyRestore - 1) / stack.Definition.EnergyRestore;
+            var available = Math.Min(GameRules.MaxEnergy - player.Energy, ProgressionRules.DailyEnergyBoost - player.EnergyBoostUsed);
+            if (available == 0) throw ApiException.BadRequest("Your 24-energy daily consumable allowance resets at midnight UTC.");
+            var maximumUseful = (available + stack.Definition.EnergyRestore - 1) / stack.Definition.EnergyRestore;
             if (quantity > maximumUseful) throw ApiException.BadRequest($"Only {maximumUseful} would help right now. Choose a smaller quantity.");
-            player.Energy = (int)Math.Min(GameRules.MaxEnergy, player.Energy + (long)stack.Definition.EnergyRestore * quantity);
+            var restored = (int)Math.Min(available, (long)stack.Definition.EnergyRestore * quantity);
+            player.Energy += restored;
+            player.EnergyBoostUsed += restored;
             if (player.Energy == GameRules.MaxEnergy) player.EnergyUpdatedAt = now;
             stack.Quantity -= quantity;
             if (stack.Quantity == 0) db.InventoryStacks.Remove(stack);
@@ -82,12 +89,12 @@ public sealed class InventoryService(GameDb db, WriteCoordinator writes, TimePro
         await writes.Execute(db, async () =>
         {
             var instance = await OwnedInstance(ownerId, instanceId, ct);
-            if (instance.Definition.Kind != "weapon") throw ApiException.BadRequest("Only weapons can be equipped.");
+            if (instance.EquipmentSlot is not ("weapon" or "training")) throw ApiException.BadRequest("This item has no equipment slot.");
             if (instance.Equipped) instance.Equipped = false;
             else
             {
                 // Persist the removal before setting the replacement to satisfy the unique equipped index.
-                var previous = await db.ItemInstances.Where(i => i.OwnerId == ownerId && i.Equipped).ToListAsync(ct);
+                var previous = await db.ItemInstances.Where(i => i.OwnerId == ownerId && i.Equipped && i.EquipmentSlot == instance.EquipmentSlot).ToListAsync(ct);
                 foreach (var item in previous) item.Equipped = false;
                 await db.SaveChangesAsync(ct);
                 instance.Equipped = true;

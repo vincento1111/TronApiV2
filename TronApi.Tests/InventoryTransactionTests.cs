@@ -23,10 +23,10 @@ public sealed class InventoryTransactionTests : IAsyncLifetime
         await using var db = CreateDb();
         await db.Database.EnsureCreatedAsync();
         var player = new Player { DisplayName = "Tester", NormalizedDisplayName = "TESTER", Email = "test@tron.local",
-            NormalizedEmail = "TEST@TRON.LOCAL", PasswordHash = "not-used", CreatedAt = Now, EnergyUpdatedAt = Now };
+            NormalizedEmail = "TEST@TRON.LOCAL", PasswordHash = "not-used", CreatedAt = Now, EnergyUpdatedAt = Now, EnergyBoostDay = Now.Date };
         db.Players.Add(player);
         db.ItemDefinitions.AddRange(
-            new() { Id = 1, Name = "Sword", Kind = "weapon", Tracking = "instance", Price = 150, BasePower = 10 },
+            new() { Id = 1, Name = "Sword", Kind = "weapon", Tracking = "instance", Price = 150, BasePower = 10, EquipmentSlot = "weapon" },
             new() { Id = 3, Name = "Soda", Kind = "consumable", Tracking = "stack", Price = 10, EnergyRestore = 6 });
         await db.SaveChangesAsync();
         playerId = player.Id;
@@ -53,14 +53,17 @@ public sealed class InventoryTransactionTests : IAsyncLifetime
         var attempts = await Task.WhenAll(Enumerable.Range(0, 2).Select(async _ =>
         {
             await using var db = CreateDb();
-            try { await new TrainingService(db, writes, clock).Train(playerId, new("strength", 50), default); return true; }
+            try { await new TrainingService(db, writes, clock, new PlayerStatsService(db), new SecureTrainingRandom()).Train(playerId, new("strength", 50), default); return true; }
             catch (ApiException ex) when (ex.Status == 400) { return false; }
         }));
         Assert.Single(attempts, success => success);
         await using var check = CreateDb();
         var player = await check.Players.SingleAsync();
         Assert.Equal(22, player.Energy);
-        Assert.Equal(60, player.Strength);
+        Assert.InRange(player.Strength, ProgressionRules.StatScale + 1, 2 * ProgressionRules.StatScale);
+        Assert.Equal(500, player.Experience);
+        Assert.Equal(50, player.TotalTrainingEnergy);
+        Assert.Equal(2, player.Level);
     }
 
     [Fact]
