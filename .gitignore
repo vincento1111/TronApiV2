@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Local revival data, secrets and generated frontend output
+**/App_Data/
+**/wwwroot/
+*.db
+*.db-shm
+*.db-wal
+TestResults/
+.tools/
